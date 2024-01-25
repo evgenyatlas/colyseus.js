@@ -22,17 +22,17 @@
  */
 
 export const createNanoEvents = () => ({
+    events: {},
     emit(event: string, ...args: any[]) {
-        let callbacks = this.events[event] || []
-        for (let i = 0, length = callbacks.length; i < length; i++) {
-            callbacks[i](...args)
+        const callbacks = this.events[event] || new Set()
+        for (const callback of callbacks) {
+            callback(...args)
         }
     },
-    events: {},
     on(event: string, cb: (...args: any[]) => void) {
-        this.events[event]?.push(cb) || (this.events[event] = [cb])
-        return () => {
-            this.events[event] = this.events[event]?.filter(i => cb !== i)
-        }
+        const callbacks = this.events[event] || new Set()
+        callbacks.add(cb)
+        this.events[event] = callbacks
+        return () => callbacks.delete(cb)
     }
-});
+})
